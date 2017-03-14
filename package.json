@@ -5,6 +5,7 @@
   "devDependencies": {
     "preact-scripts-ts": "0.8.8"
   },
+  "homepage": ".",
   "dependencies": {
     "@types/jest": "^19.2.2",
     "@types/ndarray": "^1.0.1",
