@@ -7,10 +7,12 @@
   },
   "dependencies": {
     "@types/jest": "^19.2.2",
+    "@types/ndarray": "^1.0.1",
     "@types/node": "^7.0.8",
     "@types/pixi.js": "^4.4.0",
     "material-design-icons": "^3.0.1",
     "mdi": "^1.8.36",
+    "ndarray": "^1.0.18",
     "pixi.js": "^4.4.1",
     "preact": "^7.2.0"
   },

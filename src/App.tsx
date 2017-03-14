@@ -1,5 +1,6 @@
 import { h, Component } from 'preact';
 import * as PIXI from 'pixi.js';
+import ndarray = require('ndarray');
 import './App.css';
 import 'material-design-icons/iconfont/material-icons.css';
 import 'mdi/css/materialdesignicons.css';
@@ -7,23 +8,21 @@ import 'mdi/fonts/materialdesignicons-webfont.ttf';
 import 'mdi/fonts/materialdesignicons-webfont.woff';
 import 'mdi/fonts/materialdesignicons-webfont.woff2';
 
-type Life = 0 | 1;
-
-type LifeStates = Life[][];
+type CSSProperties = { [attr: string]: string | number | undefined };
 
 interface Coordinates {
   x: number;
   y: number;
 }
 
-const WIDTH = 6;
-const HEIGHT = 6;
+const WIDTH = 5;
+const HEIGHT = 5;
 const BOX_GUTTER = 1;
 
 interface IconProps {
   className?: string;
   name?: string;
-  style?: { [attr: string]: string | number | undefined };
+  style?: CSSProperties;
 }
 
 const Icon = ({ name, style, className, ...other }: IconProps) => (
@@ -34,28 +33,28 @@ const Icon = ({ name, style, className, ...other }: IconProps) => (
   />
 );
 
-const generateField = (numRows: number, numCols: number, random: number = 0): LifeStates =>
-  new Array(numRows).fill(null).map((row, r) =>
-    new Array(numCols).fill(null).map((col, c) => Math.random() < random ? 1 : 0)
+const generateField = (numRows: number, numCols: number, random: number = 0): ndarray =>
+  ndarray(
+    new Array(numRows * numCols).fill(null).map(() => Math.random() < random ? 1 : 0),
+    [numRows, numCols]
   );
 
-function createNewGeneration(prev: LifeStates): LifeStates {
-  const next = new Array();
-  const ccx = prev.length;
+function createNewGeneration(prev: ndarray, next: ndarray): ndarray {
+  var nx = prev.shape[0],
+      ny = prev.shape[1];
 
-  for (let a = 0; a < ccx; a++) {
-    const ccy = prev[a].length;
-    next[a] = new Array();
-
-    for (let b = 0; b < ccy; b++) {
-      const ti = b - 1 < 0 ? ccy - 1 : b - 1;
-      const ri = a + 1 === ccx ? 0 : a + 1;
-      const bi = b + 1 === ccy ? 0 : b + 1;
-      const li = a - 1 < 0 ? ccx - 1 : a - 1;
-      const n = prev[li][ti] + prev[a][ti] + prev[ri][ti]
-              + prev[li][b] + prev[ri][b]
-              + prev[li][bi] + prev[a][bi] + prev[ri][bi];
-      next[a][b] = !!prev[a][b] && (n === 2 || n === 3) || n === 3 ? 1 : 0;
+  for (var i = 1; i < nx - 1; ++i) {
+    for (var j = 1; j < ny - 1; ++j) {
+      var n = 0;
+      for (var dx = -1; dx <= 1; ++dx) {
+        for (var dy = -1; dy <= 1; ++dy) {
+          if (dx === 0 && dy === 0) {
+            continue;
+          }
+          n += prev.get(i + dx, j + dy);
+        }
+      }
+      next.set(i, j, (prev.get(i, j) && (n === 2 || n === 3) || n === 3 ? 1 : 0));
     }
   }
 
@@ -84,7 +83,7 @@ interface SurfaceProps {
 }
 
 class Surface extends Component<SurfaceProps, {}> {
-  field: LifeStates = [];
+  field: ndarray = ndarray([]);
   renderer?: PIXI.WebGLRenderer | PIXI.CanvasRenderer;
   stage?: PIXI.Container;
   graphics?: PIXI.Graphics;
@@ -130,9 +129,9 @@ class Surface extends Component<SurfaceProps, {}> {
     if (this.graphics) {
       this.graphics.clear();
 
-      this.field.forEach((row, r) =>
-        row.forEach((cell, c) => {
-          if (cell && this.graphics) {
+      for (let r = 0; r < this.numRows; r++) {
+        for (let c = 0; c < this.numCols; c++) {
+          if (this.graphics && this.field.get(r, c)) {
             this.graphics.beginFill(0xFEFEFE);
             this.graphics.drawRect(
               c * boxWidth + boxGutter,
@@ -141,8 +140,8 @@ class Surface extends Component<SurfaceProps, {}> {
               boxHeight - boxGutter * 2
             );
           }
-        })
-      );
+        }
+      }
 
       if (window.innerWidth > 768 && this.mouse) {
         const r = Math.floor(this.mouse.y / (this.height / this.numRows));
@@ -161,7 +160,7 @@ class Surface extends Component<SurfaceProps, {}> {
     }
   }
 
-  step() { this.field = createNewGeneration(this.field); }
+  step() { this.field = createNewGeneration(this.field, generateField(this.numRows, this.numCols)); }
 
   update() {
     requestAnimationFrame(() => this.update());
@@ -171,7 +170,7 @@ class Surface extends Component<SurfaceProps, {}> {
   };
 
   destroy() {
-    this.field = new Array();
+    this.field.data = [];
     this.graphics = undefined;
     this.stage = undefined;
     if (this.base && this.renderer) { this.base.removeChild(this.renderer.view); }
@@ -183,7 +182,7 @@ class Surface extends Component<SurfaceProps, {}> {
     if (!this.base) { return; }
     const r = Math.floor(e.offsetY / (this.height / this.numRows));
     const c = Math.floor(e.offsetX / (this.width / this.numCols));
-    this.field[r][c] = !this.field[r][c] ? 1 : 0;
+    this.field.set(r, c, this.field.get(r, c) ? 0 : 1);
   }
 
   componentDidMount() {
@@ -195,10 +194,13 @@ class Surface extends Component<SurfaceProps, {}> {
   componentWillReceiveProps(next: SurfaceProps) {
     if (next.numRows !== this.props.numRows
      || next.numCols !== this.props.numCols) {
-      setTimeout(() => {
-        this.destroy();
-        this.init(); // TOOD: fix this!  not working at all
-      }, 150);
+      setTimeout(
+        () => {
+          this.destroy();
+          this.init(); // TOOD: fix this!  not working at all
+        },
+        150,
+      );
     } else if (next.step && !this.props.step) {
       this.step();
     } else if (next.reset && !this.props.reset) {
@@ -220,6 +222,7 @@ class Surface extends Component<SurfaceProps, {}> {
       <div
         style={{ width: '100%', height: '100%' }}
         onClick={e => this.toggleState(e)}
+        // tslint:disable-next-line no-any
         onMouseMove={(e: any) => { this.mouse = { x: e.offsetX, y: e.offsetY }; }}
         onMouseOut={() => { this.mouse = undefined; }}
       />
@@ -241,8 +244,8 @@ class Lab extends Component<{}, LabState> {
     play: false,
     step: false,
     reset: false,
-    numRows: Math.floor((window.innerHeight - 40) / 10),
-    numCols: Math.floor(window.innerWidth / 10),
+    numRows: Math.floor((window.innerHeight - 40) / WIDTH),
+    numCols: Math.floor(window.innerWidth / HEIGHT),
     gutters: true,
   };
 
@@ -266,6 +269,17 @@ class Lab extends Component<{}, LabState> {
     const { numCols, numRows, gutters, play, reset, step } = this.state;
     return (
       <div className="container">
+        <div className="surface">
+          <Surface
+            numCols={numCols}
+            numRows={numRows}
+            gutters={gutters}
+            random={0.25}
+            play={play}
+            reset={reset}
+            step={step}
+          />
+        </div>
         <div className="toolbar">
           <IconButton
             name={!this.state.play ? 'play' : 'stop'}
@@ -282,6 +296,7 @@ class Lab extends Component<{}, LabState> {
             value={numRows.toString()}
             min={10}
             max={1000}
+            // tslint:disable-next-line no-any
             onChange={(e: any) => this.updateState({ numRows: parseInt(e.target.value, 10) })}
           />
           <span className="toolbar-text">x</span>
@@ -290,18 +305,8 @@ class Lab extends Component<{}, LabState> {
             value={numCols.toString()}
             min={10}
             max={1000}
+            // tslint:disable-next-line no-any
             onChange={(e: any) => this.updateState({ numCols: parseInt(e.target.value, 10) })}
-          />
-        </div>
-        <div className="surface">
-          <Surface
-            numCols={numCols}
-            numRows={numRows}
-            gutters={gutters}
-            random={0.25}
-            play={play}
-            reset={reset}
-            step={step}
           />
         </div>
       </div>
