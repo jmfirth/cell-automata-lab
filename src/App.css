@@ -1,0 +1,50 @@
+.container {
+  display: flex;
+  flex: 0 1 0%;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.toolbar {
+  height: 40px;
+  background-color: #191970;
+  display: flex;
+  flex: 0 1 40px;
+  flex-direction: row;
+  align-items: center;
+}
+
+.toolbar-text {
+  color: #fefefe;
+  margin: 0 10px;
+}
+
+.button {
+  padding: 3px 10px 5px 10px;
+  margin: 0 10px;
+  color: #fefefe;
+  background-color: transparent;
+  border: 0;
+  text-transform: capitalize;
+  font-size: 16px;
+  outline: 0;
+}
+
+.button:hover {
+  color: darkorange;
+}
+
+.surface {
+  display: flex;
+  flex: 1;
+  flex-grow: 1;
+}
+
+input[type="number"] {
+  border: none;
+  font-size: 1em;
+  line-height: 1.15em;
+  text-align: right;
+}

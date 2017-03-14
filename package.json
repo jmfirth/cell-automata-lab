@@ -1,0 +1,23 @@
+{
+  "name": "cell-automata-lab",
+  "version": "0.1.0",
+  "private": true,
+  "devDependencies": {
+    "preact-scripts-ts": "0.8.8"
+  },
+  "dependencies": {
+    "@types/jest": "^19.2.2",
+    "@types/node": "^7.0.8",
+    "@types/pixi.js": "^4.4.0",
+    "material-design-icons": "^3.0.1",
+    "mdi": "^1.8.36",
+    "pixi.js": "^4.4.1",
+    "preact": "^7.2.0"
+  },
+  "scripts": {
+    "start": "preact-scripts-ts start",
+    "build": "preact-scripts-ts build",
+    "test": "preact-scripts-ts test --env=jsdom",
+    "eject": "preact-scripts-ts eject"
+  }
+}
