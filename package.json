@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "devDependencies": {
-    "preact-scripts-ts": "0.8.8"
+    "preact-scripts-ts": "^0.9.7"
   },
   "homepage": "http://jmfirth.github.io/cell-automata-lab",
   "dependencies": {
