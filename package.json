@@ -15,7 +15,8 @@
     "mdi": "^1.8.36",
     "ndarray": "^1.0.18",
     "pixi.js": "^4.4.1",
-    "preact": "^7.2.0"
+    "preact": "^7.2.0",
+    "rimraf": "^2.6.1"
   },
   "scripts": {
     "start": "preact-scripts-ts start",
@@ -23,7 +24,7 @@
     "test": "preact-scripts-ts test --env=jsdom",
     "eject": "preact-scripts-ts eject",
     "deploy": "gh-pages-deploy",
-    "clean-source": "rimraf src public build package.json .babelrc tsconfig.json tslint.json yarn.lock"
+    "clean-source": "rimraf src public build package.json tsconfig.json tslint.json yarn.lock"
   },
   "gh-pages-deploy": {
     "staticpath": "build",
