@@ -10,6 +10,7 @@
     "@types/ndarray": "^1.0.1",
     "@types/node": "^7.0.8",
     "@types/pixi.js": "^4.4.0",
+    "gh-pages-deploy": "^0.4.2",
     "material-design-icons": "^3.0.1",
     "mdi": "^1.8.36",
     "ndarray": "^1.0.18",
@@ -20,6 +21,18 @@
     "start": "preact-scripts-ts start",
     "build": "preact-scripts-ts build",
     "test": "preact-scripts-ts test --env=jsdom",
-    "eject": "preact-scripts-ts eject"
+    "eject": "preact-scripts-ts eject",
+    "deploy": "gh-pages-deploy",
+    "clean-source": "rimraf src public build package.json .babelrc tsconfig.json tslint.json yarn.lock"
+  },
+  "gh-pages-deploy": {
+    "staticpath": "build",
+    "prep": [
+      "build"
+    ],
+    "post": [
+      "clean-source"
+    ],
+    "noprompt": false
   }
 }

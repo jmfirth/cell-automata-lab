@@ -269,17 +269,6 @@ class Lab extends Component<{}, LabState> {
     const { numCols, numRows, gutters, play, reset, step } = this.state;
     return (
       <div className="container">
-        <div className="surface">
-          <Surface
-            numCols={numCols}
-            numRows={numRows}
-            gutters={gutters}
-            random={0.25}
-            play={play}
-            reset={reset}
-            step={step}
-          />
-        </div>
         <div className="toolbar">
           <IconButton
             name={!this.state.play ? 'play' : 'stop'}
@@ -307,6 +296,17 @@ class Lab extends Component<{}, LabState> {
             max={1000}
             // tslint:disable-next-line no-any
             onChange={(e: any) => this.updateState({ numCols: parseInt(e.target.value, 10) })}
+          />
+        </div>
+        <div className="surface">
+          <Surface
+            numCols={numCols}
+            numRows={numRows}
+            gutters={gutters}
+            random={0.25}
+            play={play}
+            reset={reset}
+            step={step}
           />
         </div>
       </div>
